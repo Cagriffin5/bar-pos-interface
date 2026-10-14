@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pioneer POS // High-Volume Smart Interface</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Primary Grid Layout Frame -->
+    <main class="pos-container">
+        
+        <!-- Left Side: Dynamic Grid Ordering Board -->
+        <section class="menu-section">
+            <header class="pos-header">
+                <h1>Pioneer POS<span>.</span></h1>
+                <p>High-Velocity Service Panel // Inventory Engine Active</p>
+            </header>
+
+            <!-- Touch-Screen Optimized Item Layout Grid -->
+            <div class="menu-grid" id="menu-grid">
+                <!-- JavaScript automatically populates interactive menu buttons here -->
+            </div>
+        </section>
+
+        <!-- Right Side: Real-Time Order Receipt & Checkout Summary Pane -->
+        <section class="checkout-pane">
+            <h2>Current Tab</h2>
+            
+            <!-- Dynamic Receipt View Item Grid -->
+            <div class="receipt-container">
+                <table class="receipt-table">
+                    <thead>
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Qty</th>
+                            <th class="text-right">Price</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="receipt-body">
+                        <!-- JavaScript automatically maps item rows here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Financial Calculations Breakdown Blocks -->
+            <div class="financials-breakdown">
+                <div class="calc-row">
+                    <span>Subtotal:</span>
+                    <span id="summary-subtotal">$0.00</span>
+                </div>
+                <div class="calc-row">
+                    <span>Sales Tax (7.75% SD):</span>
+                    <span id="summary-tax">$0.00</span>
+                </div>
+                
+                <!-- Dynamic Interactive Tip Selection Block Matrix -->
+                <div class="tip-selector">
+                    <label>Select Auto-Tip Accent:</label>
+                    <div class="tip-buttons">
+                        <button class="btn-tip" data-tip="0.15">15%</button>
+                        <button class="btn-tip active" data-tip="0.18">18%</button>
+                        <button class="btn-tip" data-tip="0.20">20%</button>
+                    </div>
+                </div>
+
+                <div class="calc-row total-row">
+                    <span>Total Bill:</span>
+                    <span id="summary-total">$0.00</span>
+                </div>
+
+                <!-- Action Button Matrix -->
+                <button id="btn-checkout" class="btn-checkout">Process Tab & Clear</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Connect Application Engine -->
+    <script src="app.js"></script>
+</body>
+</html>
