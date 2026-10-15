@@ -1,180 +1,176 @@
-/**
- * Pioneer POS Application Core Engine
- * Manages item datasets, asynchronous quantity updates, and financial state calculations.
- */
+document.addEventListener('DOMContentLoaded', () => {
+  
+  // Static Product Catalog Configuration Dataset
+  const inventoryMenu = [
+    { id: 'PROD-01', name: 'Sip House Red Wine', price: 12.00 },
+    { id: 'PROD-02', name: 'Craft IPA Beer', price: 8.50 },
+    { id: 'PROD-03', name: 'Pioneer BBQ Burger', price: 16.00 },
+    { id: 'PROD-04', name: 'Smoked Brisket Tacos', price: 14.50 },
+    { id: 'PROD-05', name: 'Garlic Parmesan Fries', price: 7.00 },
+    { id: 'PROD-06', name: 'Artisanal Soft Pretzel', price: 9.00 }
+  ];
 
-// 1. Core Data State Configuration (Products, Prices, and Stock Trackers)
-const menuItems = [
-    { id: 101, name: "Smoked Brisket Sandwich", price: 16.50, stock: 12 },
-    { id: 102, name: "Pulled Pork Sliders", price: 14.00, stock: 15 },
-    { id: 103, name: "Pioneer Craft IPA", price: 8.50, stock: 4 }, // Low Stock Demo
-    { id: 104, name: "Bourbon Barrel Stout", price: 10.00, stock: 8 },
-    { id: 105, name: "Smoked Wings (6pc)", price: 12.00, stock: 0 }, // Out of Stock Demo
-    { id: 106, name: "House Sour Mash Cocktail", price: 11.50, stock: 20 },
-    { id: 107, name: "Crispy Garlic Fries", price: 6.50, stock: 25 },
-    { id: 108, name: "Artisanal Soft Pretzel", price: 7.00, stock: 10 }
-];
+  // Transaction Ledger State Model Array
+  let currentCheckTab = [];
+  let currentTipRate = 0.18; // Default selected tip coefficient initialization (18%)
+  const taxConstantRate = 0.0775; // San Diego Constant Sales Tax Index (7.75%)
 
-// 2. Local State Management Tracking Containers
-let currentTab = [];
-let selectedTipRate = 0.18; // Default active tip rate percentage setting
+  // UI Components Target DOM Selection Hooks
+  const menuGridContainer = document.getElementById('menu-grid');
+  const receiptTableBody = document.getElementById('receipt-body');
+  const checkoutActionBtn = document.getElementById('btn-checkout');
+  const tipSelectionButtons = document.querySelectorAll('.btn-tip');
 
-// 3. UI DOM Element Node Handle Points
-const menuGrid = document.getElementById('menu-grid');
-const receiptBody = document.getElementById('receipt-body');
-const subtotalDisplay = document.getElementById('summary-subtotal');
-const taxDisplay = document.getElementById('summary-tax');
-const totalDisplay = document.getElementById('summary-total');
-const checkoutBtn = document.getElementById('btn-checkout');
-const tipButtons = document.querySelectorAll('.btn-tip');
+  // Math Output String View Targets
+  const displaySubtotal = document.getElementById('summary-subtotal');
+  const displayTax = document.getElementById('summary-tax');
+  const displayTotal = document.getElementById('summary-total');
 
-// 4. Render Touch-Friendly Menu Grid
-function renderMenuGrid() {
-    menuGrid.innerHTML = '';
+  /* -------------------------------------------------------------
+     1. Build Product Button Catalog Matrix Elements Natively
+  ------------------------------------------------------------- */
+  function initializePOSCatalogUI() {
+    if (!menuGridContainer) return;
+    menuGridContainer.innerHTML = '';
 
-    menuItems.forEach(item => {
-        const card = document.createElement('div');
-        card.classList.add('menu-card');
-        
-        // Dynamic stock tracking display conditions
-        let stockLabel = `In Stock: ${item.stock}`;
-        if (item.stock === 0) {
-            card.classList.add('out-of-stock');
-            stockLabel = "Sold Out";
-        } else if (item.stock <= 4) {
-            card.classList.add('low-stock');
-            stockLabel = `Low Stock: ${item.stock}`;
-        }
+    inventoryMenu.forEach(item => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'product-card-btn';
+      button.setAttribute('aria-label', `Add ${item.name} into transaction ledger for $${item.price.toFixed(2)}`);
+      
+      button.innerHTML = `
+        <span class="prod-name">${escapeHTML(item.name)}</span>
+        <span class="prod-price">$${item.price.toFixed(2)}</span>
+      `;
 
-        card.innerHTML = `
-            <div>
-                <h4>${item.name}</h4>
-                <p class="menu-item-price">$${item.price.toFixed(2)}</p>
-            </div>
-            <span class="stock-badge">${stockLabel}</span>
-        `;
+      button.addEventListener('click', () => {
+        addProductToCheckTab(item);
+      });
 
-        // Intercept card clicks to add items to tab
-        if (item.stock > 0) {
-            card.addEventListener('click', () => addItemToTab(item.id));
-        }
-
-        menuGrid.appendChild(card);
+      menuGridContainer.appendChild(button);
     });
-}
 
-// 5. Add Items to the Tab Component
-function addItemToTab(itemId) {
-    const itemData = menuItems.find(i => i.id === itemId);
-    const existingIndex = currentTab.findIndex(t => t.id === itemId);
+    renderReceiptInvoiceLedger();
+  }
 
-    // Validate active physical inventory availability counts before processing item addition
-    const currentQtyInCart = existingIndex > -1 ? currentTab[existingIndex].qty : 0;
-    if (itemData.stock <= currentQtyInCart) {
-        alert(`Cannot add item. Pioneer stock limits reached for: ${itemData.name}`);
-        return;
-    }
+  function addProductToCheckTab(product) {
+    const existingCheckItem = currentCheckTab.find(item => item.id === product.id);
 
-    if (existingIndex > -1) {
-        currentTab[existingIndex].qty += 1;
+    if (existingCheckItem) {
+      existingCheckItem.qty += 1;
     } else {
-        currentTab.push({ id: itemData.id, name: itemData.name, price: itemData.price, qty: 1 });
+      currentCheckTab.push({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        qty: 1
+      });
     }
 
-    updatePOSView();
-}
+    renderReceiptInvoiceLedger();
+  }
 
-// 6. Remove/Subtract Quantities From Tab Component
-function removeItemFromTab(itemId) {
-    const existingIndex = currentTab.findIndex(t => t.id === itemId);
-    if (existingIndex === -1) return;
+  /* -------------------------------------------------------------
+     2. Calculation Pipeline & Check Rendering Engine
+  ------------------------------------------------------------- */
+  function renderReceiptInvoiceLedger() {
+    receiptTableBody.innerHTML = '';
 
-    if (currentTab[existingIndex].qty > 1) {
-        currentTab[existingIndex].qty -= 1;
-    } else {
-        currentTab.splice(existingIndex, 1);
+    if (currentCheckTab.length === 0) {
+      receiptTableBody.innerHTML = `
+        <tr>
+          <td colspan="4" class="text-center" style="color: var(--text-muted); padding: 40px; font-style: italic;">
+            No items added to current terminal register check.
+          </td>
+        </tr>
+      `;
+      displaySubtotal.textContent = '\$0.00';
+      displayTax.textContent = '\$0.00';
+      displayTotal.textContent = '\$0.00';
+      return;
     }
 
-    updatePOSView();
-}
+    let accumulatedSubtotal = 0.0;
 
-// 7. Process Calculations Math Ledger
-function calculateTotals() {
-    const subtotal = currentTab.reduce((sum, item) => sum + (item.price * item.qty), 0);
-    const taxRate = 0.0775; // San Diego Regional Sales Tax Configuration Constant (7.75%)
-    
-    const calculatedTax = subtotal * taxRate;
-    const calculatedTip = subtotal * selectedTipRate;
-    const finalBillTotal = subtotal + calculatedTax + calculatedTip;
+    currentCheckTab.forEach(item => {
+      const totalItemRowCost = item.price * item.qty;
+      accumulatedSubtotal += totalItemRowCost;
 
-    subtotalDisplay.textContent = `$${subtotal.toFixed(2)}`;
-    taxDisplay.textContent = `$${calculatedTax.toFixed(2)}`;
-    totalDisplay.textContent = `$${finalBillTotal.toFixed(2)}`;
-}
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td><strong>${escapeHTML(item.name)}</strong></td>
+        <td class="text-center">${item.qty}</td>
+        <td class="text-right" style="font-family: monospace;">$${totalItemRowCost.toFixed(2)}</td>
+        <td class="text-center">
+          <button type="button" class="btn-item-purge" data-id="${item.id}" aria-label="Purge item reference check lines for ${escapeHTML(item.name)}">
+            &times;
+          </button>
+        </td>
+      `;
 
-// 8. Render Tab Receipt Matrix
-function renderReceiptTable() {
-    receiptBody.innerHTML = '';
+      row.querySelector('.btn-item-purge').addEventListener('click', (e) => {
+        const idMatch = e.target.getAttribute('data-id');
+        currentCheckTab = currentCheckTab.filter(record => record.id !== idMatch);
+        renderReceiptInvoiceLedger();
+      });
 
-    currentTab.forEach(item => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${item.name}</td>
-            <td>${item.qty}</td>
-            <td class="text-right">$${(item.price * item.qty).toFixed(2)}</td>
-            <td style="text-align: center;"><button class="btn-remove" data-id="${item.id}">×</button></td>
-        `;
-
-        row.querySelector('.btn-remove').addEventListener('click', (e) => {
-            removeItemFromTab(parseInt(e.target.getAttribute('data-id')));
-        });
-
-        receiptBody.appendChild(row);
+      receiptTableBody.appendChild(row);
     });
-}
 
-// 9. Master UI Sync Operations Orchestration Hub
-function updatePOSView() {
-    renderReceiptTable();
-    calculateTotals();
-}
+    // Execute standard accounting balance matrices calculations
+    const computedSalesTax = accumulatedSubtotal * taxConstantRate;
+    const computedGratuity = accumulatedSubtotal * currentTipRate;
+    const localizedFinalTotal = accumulatedSubtotal + computedSalesTax + computedGratuity;
 
-// 10. Setup Interactive Event Listeners for Tips and Checkout
-tipButtons.forEach(button => {
-    button.addEventListener('click', (e) => {
-        // Toggle selected button visual treatments
-        tipButtons.forEach(btn => btn.classList.remove('active'));
-        e.target.classList.add('active');
+    // Flush computed output balances directly down to individual panels view layers
+    displaySubtotal.textContent = `$${accumulatedSubtotal.toFixed(2)}`;
+    displayTax.textContent = `$${computedSalesTax.toFixed(2)}`;
+    displayTotal.textContent = `$${localizedFinalTotal.toFixed(2)}`;
+  }
 
-        // Extract value configuration parameters from DOM node bindings
-        selectedTipRate = parseFloat(e.target.getAttribute('data-tip'));
-        calculateTotals();
+  /* -------------------------------------------------------------
+     3. Tip Selection Group Array Click Controls
+  ------------------------------------------------------------- */
+  tipSelectionButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      const targetPercent = parseFloat(button.getAttribute('data-tip'));
+
+      tipSelectionButtons.forEach(b => {
+        b.classList.remove('active');
+        b.removeAttribute('aria-current');
+      });
+
+      button.classList.add('active');
+      button.setAttribute('aria-current', 'true');
+      currentTipRate = targetPercent;
+
+      renderReceiptInvoiceLedger();
     });
+  });
+
+  /* -------------------------------------------------------------
+     4. Tab Finalization Clear Settlement Execution Trigger Hooks
+  ------------------------------------------------------------- */
+  if (checkoutActionBtn) {
+    checkoutActionBtn.addEventListener('click', () => {
+      if (currentCheckTab.length === 0) return;
+
+      alert(`Terminal Invoice Closed Successfully!\nCheck Balance Cleared: ${displayTotal.textContent}`);
+      
+      // Wipe structural model arrays back down to baseline values reset configurations
+      currentCheckTab = [];
+      renderReceiptInvoiceLedger();
+    });
+  }
+
+  /* Helper script checking and cleaning text parameters string mutations */
+  function escapeHTML(str) {
+    return str.replace(/[&<>'"]/g, 
+      tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+    );
+  }
+
+  // Self execute constructor on module load
+  initializePOSCatalogUI();
 });
-
-checkoutBtn.addEventListener('click', () => {
-    if (currentTab.length === 0) {
-        alert("The current tab ledger contains no line items to execute.");
-        return;
-    }
-
-    // Deduct stock levels permanently to simulate standard real-world checkout persistence
-    currentTab.forEach(cartItem => {
-        const structuralMenuItem = menuItems.find(i => i.id === cartItem.id);
-        if (structuralMenuItem) {
-            structuralMenuItem.stock -= cartItem.qty;
-        }
-    });
-
-    // Alert successful payment confirmation execution loop
-    alert("Transaction authorized successfully. Tab synchronized and invoice printed.");
-    
-    // Purge cart states and update master view tracking
-    currentTab = [];
-    updatePOSView();
-    renderMenuGrid();
-});
-
-// 11. Initial Application Setup Execution Lifecycles
-renderMenuGrid();
-updatePOSView();

@@ -1,274 +1,321 @@
-/* --- Core POS Color Variable System --- */
+/* ==========================================================================
+   1. SYSTEM DESIGN TOKENS
+   ========================================================================== */
 :root {
-    --bg-dark: #12181f;
-    --panel-bg: #1e2630;
-    --panel-accent: #26313f;
-    --text-light: #ffffff;
-    --text-muted: #8a9ba8;
-    --intuit-blue: #0077c5;
-    --success-green: #27a36c;
-    --danger-red: #d53d4c;
-    --warning-orange: #ff9800;
-    --border-color: #2d3b4d;
-    --radius: 8px;
+  --bg-main: #0f1115;
+  --bg-panel: #161a22;
+  --bg-input: #1f2430;
+  --text-main: #f0f4f8;
+  --text-muted: #8a99ad;
+  --accent-base: #ED3814;
+  --focus-ring: #00bcff;
+  --border-line: rgba(255, 255, 255, 0.05);
 }
 
-/* --- Base Global Setting Blocks --- */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    -webkit-user-select: none; /* Inhibit user highlight flashes on high-velocity interactions */
-    user-select: none;
+/* ==========================================================================
+   2. GLOBAL SETUP & LAYOUT BASE
+   ========================================================================== */
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
 body {
-    background-color: var(--bg-dark);
-    color: var(--text-light);
-    height: 100vh;
-    padding: 24px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  min-height: 100vh;
 }
 
-/* --- Container Core Grid Architecture --- */
+/* ==========================================================================
+   3. PRIMARY INTERFACE DOCK SPLIT FRAME
+   ========================================================================== */
 .pos-container {
-    width: 100%;
-    max-width: 1300px;
-    height: 90vh;
-    display: grid;
-    grid-template-columns: 1.8fr 1fr;
-    gap: 24px;
+  display: grid;
+  grid-template-columns: 1fr;
+  min-height: 100vh;
 }
 
-@media (max-width: 1000px) {
-    .pos-container {
-        grid-template-columns: 1fr;
-        height: auto;
-    }
-}
-
-/* --- Left Side Panel Styling --- */
 .menu-section {
-    display: flex;
-    flex-direction: column;
-}
-
-.pos-header {
-    margin-bottom: 20px;
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
 }
 
 .pos-header h1 {
-    font-size: 28px;
-    font-weight: 800;
+  font-family: "Geo", sans-serif;
+  font-size: 2.8rem;
+  margin: 0;
 }
 
 .pos-header h1 span {
-    color: var(--intuit-blue);
+  color: var(--accent-base);
 }
 
 .pos-header p {
-    color: var(--text-muted);
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin: 4px 0 0 0;
+  font-size: 0.95rem;
 }
 
-/* --- Menu Grid Dynamic Elements --- */
-.menu-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-    gap: 16px;
-    overflow-y: auto;
-    padding-right: 8px;
-}
-
-/* --- Interactive Large Touch-Item Targets --- */
-.menu-card {
-    background-color: var(--panel-bg);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius);
-    padding: 20px;
-    text-align: center;
-    cursor: pointer;
-    transition: transform 0.1s ease, border-color 0.1s ease;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 150px;
-}
-
-.menu-card:hover {
-    border-color: var(--intuit-blue);
-}
-
-.menu-card:active {
-    transform: scale(0.96);
-}
-
-.menu-card h4 {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 6px;
-}
-
-.menu-item-price {
-    color: var(--text-muted);
-    font-weight: 700;
-    font-size: 15px;
-    margin-bottom: 12px;
-}
-
-.stock-badge {
-    font-size: 11px;
-    font-weight: 700;
-    padding: 4px 8px;
-    border-radius: 20px;
-    background-color: rgba(39, 163, 108, 0.15);
-    color: var(--success-green);
-    text-transform: uppercase;
-}
-
-/* --- Out of Stock UI Visual Overrides --- */
-.menu-card.out-of-stock {
-    opacity: 0.4;
-    cursor: not-allowed;
-    border-color: var(--danger-red) !important;
-}
-
-.menu-card.out-of-stock .stock-badge {
-    background-color: rgba(213, 61, 76, 0.15);
-    color: var(--danger-red);
-}
-
-.menu-card.low-stock .stock-badge {
-    background-color: rgba(255, 152, 0, 0.15);
-    color: var(--warning-orange);
-}
-
-/* --- Right Side Panel Checkout Pane Layout --- */
-.checkout-pane {
-    background-color: var(--panel-bg);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius);
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
-
+.menu-grid-wrapper h2,
 .checkout-pane h2 {
-    font-size: 18px;
-    margin-bottom: 16px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--border-color);
+  font-size: 1.35rem;
+  margin: 0 0 20px 0;
+  border-left: 3px solid var(--accent-base);
+  padding-left: 12px;
 }
 
-/* --- Receipt Table Data System --- */
+/* Fluid items matrix grid */
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+/* Interactive register menu keycaps button layouts */
+.product-card-btn {
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-line);
+  color: var(--text-main);
+  border-radius: 8px;
+  padding: 24px 16px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 120px;
+  text-align: center;
+  gap: 12px;
+  transition: border-color 0.2s, background-color 0.2s, transform 0.1s;
+}
+
+.product-card-btn:hover {
+  background-color: var(--bg-input);
+  border-color: var(--accent-base);
+}
+
+.product-card-btn:active {
+  transform: scale(0.97);
+}
+
+.product-card-btn:focus-visible {
+  outline: 2px solid var(--focus-ring);
+}
+
+.product-card-btn .prod-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.product-card-btn .prod-price {
+  color: var(--accent-base);
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+/* ==========================================================================
+   4. CHECKOUT SUMMARY & RECEIPT LEDGER
+   ========================================================================== */
+.checkout-pane {
+  background-color: var(--bg-panel);
+  padding: 32px 24px;
+  border-top: 2px solid var(--bg-main);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
 .receipt-container {
-    flex-grow: 1;
-    overflow-y: auto;
-    margin-bottom: 20px;
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 6px;
+  background-color: rgba(0,0,0,0.15);
+  border: 1px solid var(--border-line);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.receipt-container:focus-visible {
+  outline: 2px solid var(--focus-ring);
 }
 
 .receipt-table {
-    width: 100%;
-    border-collapse: collapse;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
 }
 
-.receipt-table th, .receipt-table td {
-    padding: 10px 0;
-    text-align: left;
-    font-size: 14px;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+.receipt-table th,
+.receipt-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-line);
 }
 
 .receipt-table th {
-    color: var(--text-muted);
-    font-size: 11px;
-    text-transform: uppercase;
+  background-color: rgba(0,0,0,0.25);
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  position: sticky;
+  top: 0;
+  z-index: 5;
 }
 
-.text-right { text-align: right !important; }
-
-.btn-remove {
-    background: none;
-    border: none;
-    color: var(--danger-red);
-    cursor: pointer;
-    font-weight: bold;
-    padding: 0 4px;
+.btn-item-purge {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.25rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px;
+  transition: color 0.15s;
 }
 
-/* --- Auto Calculations Layout Blocks --- */
+.btn-item-purge:hover {
+  color: var(--accent-base);
+}
+
+.btn-item-purge:focus-visible {
+  outline: 2px solid var(--focus-ring);
+}
+
+/* ==========================================================================
+   5. FINANCIAL CALCULATIONS TRACK CONTROLS
+   ========================================================================== */
 .financials-breakdown {
-    border-top: 2px dashed var(--border-color);
-    padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: auto;
 }
 
 .calc-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 8px;
-    font-size: 14px;
-    color: var(--text-muted);
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.95rem;
+  color: var(--text-muted);
 }
 
-.total-row {
-    margin-top: 16px;
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--text-light);
+.calc-row span:last-child {
+  color: var(--text-main);
+  font-weight: 600;
 }
 
-/* --- Interactive Tip Button Selection Arrays --- */
+/* Auto Gratuity Selector */
 .tip-selector {
-    margin: 16px 0;
+  border-top: 1px dashed var(--border-line);
+  border-bottom: 1px dashed var(--border-line);
+  padding: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.tip-selector label {
-    display: block;
-    font-size: 12px;
-    color: var(--text-muted);
-    margin-bottom: 8px;
-    text-transform: uppercase;
+.tip-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 600;
 }
 
 .tip-buttons {
-    display: flex;
-    gap: 10px;
+  display: flex;
+  gap: 8px;
 }
 
 .btn-tip {
-    flex: 1;
-    background-color: var(--panel-accent);
-    border: 1px solid var(--border-color);
-    color: var(--text-light);
-    padding: 10px;
-    border-radius: var(--radius);
-    cursor: pointer;
-    font-weight: 600;
+  flex: 1;
+  padding: 12px;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-line);
+  color: var(--text-main);
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.btn-tip:hover {
+  border-color: var(--accent-base);
 }
 
 .btn-tip.active {
-    background-color: var(--intuit-blue);
-    border-color: var(--intuit-blue);
+  background-color: var(--accent-base);
+  border-color: var(--accent-base);
+  color: #ffffff;
 }
 
-/* --- Complete Processing CTA Button --- */
+.btn-tip:focus-visible {
+  outline: 2px solid var(--focus-ring);
+}
+
+/* Total Emphasis Row */
+.total-row {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: var(--text-main);
+  padding: 4px 0;
+}
+
+.total-row span:last-child {
+  font-size: 1.6rem;
+}
+
 .btn-checkout {
-    width: 100%;
-    background-color: var(--success-green);
-    color: white;
-    padding: 16px;
-    border: none;
-    border-radius: var(--radius);
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: opacity 0.1s ease;
+  width: 100%;
+  padding: 16px;
+  background-color: var(--accent-base);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: opacity 0.2s;
 }
 
-.btn-checkout:hover { opacity: 0.9; }
+.btn-checkout:hover {
+  opacity: 0.95;
+}
+
+.btn-checkout:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+
+/* ==========================================================================
+   6. RESPONSIVE DESKTOP ADAPTATION MEDIA BREAKPOINT
+   ========================================================================== */
+@media (min-width: 992px) {
+  .pos-container {
+    grid-template-columns: 1fr 380px; /* Sidebar split monitor alignment */
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .menu-section {
+    overflow-y: auto;
+    height: 100vh;
+  }
+
+  .checkout-pane {
+    border-top: none;
+    border-left: 2px solid var(--bg-main);
+    height: 100vh;
+    position: sticky;
+    top: 0;
+  }
+
+  .receipt-container {
+    max-height: none; /* Extends ledger scroll lists safely through viewport balance tracks */
+    flex-grow: 1;
+  }
+}

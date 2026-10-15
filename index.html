@@ -12,31 +12,34 @@
     <main class="pos-container">
         
         <!-- Left Side: Dynamic Grid Ordering Board -->
-        <section class="menu-section">
+        <section class="menu-section" aria-labelledby="menu-heading">
             <header class="pos-header">
-                <h1>Pioneer POS<span>.</span></h1>
+                <h1 id="menu-heading">Pioneer POS<span>.</span></h1>
                 <p>High-Velocity Service Panel // Inventory Engine Active</p>
             </header>
 
             <!-- Touch-Screen Optimized Item Layout Grid -->
-            <div class="menu-grid" id="menu-grid">
-                <!-- JavaScript automatically populates interactive menu buttons here -->
+            <div class="menu-grid-wrapper">
+                <h2>Product Catalog</h2>
+                <div class="menu-grid" id="menu-grid">
+                    <!-- JavaScript automatically populates interactive menu buttons here -->
+                </div>
             </div>
         </section>
 
         <!-- Right Side: Real-Time Order Receipt & Checkout Summary Pane -->
-        <section class="checkout-pane">
-            <h2>Current Tab</h2>
+        <aside class="checkout-pane" aria-labelledby="ledger-heading">
+            <h2 id="ledger-heading">Current Tab</h2>
             
             <!-- Dynamic Receipt View Item Grid -->
-            <div class="receipt-container">
+            <div class="receipt-container" tabindex="0" aria-label="Active order item list ledger (Scrollable check view)">
                 <table class="receipt-table">
                     <thead>
                         <tr>
                             <th>Item Name</th>
-                            <th>Qty</th>
+                            <th class="text-center">Qty</th>
                             <th class="text-right">Price</th>
-                            <th></th>
+                            <th class="text-center">Action</th>
                         </tr>
                     </thead>
                     <tbody id="receipt-body">
@@ -45,8 +48,8 @@
                 </table>
             </div>
 
-            <!-- Financial Calculations Breakdown Blocks -->
-            <div class="financials-breakdown">
+            <!-- Financial Calculations Breakdown Blocks (Announces changes dynamically to screen readers) -->
+            <div class="financials-breakdown" aria-live="polite">
                 <div class="calc-row">
                     <span>Subtotal:</span>
                     <span id="summary-subtotal">$0.00</span>
@@ -58,11 +61,11 @@
                 
                 <!-- Dynamic Interactive Tip Selection Block Matrix -->
                 <div class="tip-selector">
-                    <label>Select Auto-Tip Accent:</label>
-                    <div class="tip-buttons">
-                        <button class="btn-tip" data-tip="0.15">15%</button>
-                        <button class="btn-tip active" data-tip="0.18">18%</button>
-                        <button class="btn-tip" data-tip="0.20">20%</button>
+                    <span class="tip-label">Select Auto-Tip Accent:</span>
+                    <div class="tip-buttons" role="group" aria-label="Select gratuity percentage layer to append to checkout balance">
+                        <button type="button" class="btn-tip" data-tip="0.15">15%</button>
+                        <button type="button" class="btn-tip active" data-tip="0.18" aria-current="true">18%</button>
+                        <button type="button" class="btn-tip" data-tip="0.20">20%</button>
                     </div>
                 </div>
 
@@ -72,12 +75,11 @@
                 </div>
 
                 <!-- Action Button Matrix -->
-                <button id="btn-checkout" class="btn-checkout">Process Tab & Clear</button>
+                <button type="button" id="btn-checkout" class="btn-checkout">Process Tab & Clear</button>
             </div>
-        </section>
+        </aside>
     </main>
 
-    <!-- Connect Application Engine -->
     <script src="app.js"></script>
 </body>
 </html>
